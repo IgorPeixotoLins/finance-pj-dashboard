@@ -24,7 +24,7 @@ const cardStyles = {
   container: "bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col gap-2",
   header: "flex items-center justify-between",
   title: "text-sm font-medium text-slate-500 font-sans",
-  iconWrapper: "p-2 bg-slate-50 rounded-md text-slate-400",
+  iconWrapper: "p-2 bg-slate-50 rounded-md text-slate-400 [&>svg]:w-5 [&>svg]:h-5",
   value: "text-3xl font-bold text-slate-900 font-display tracking-tight",
   trendBase: "text-xs font-mono font-medium",
   trendUp: "text-emerald-600",
@@ -62,7 +62,8 @@ export function Dashboard() {
     setSearchTerm,
     selectedType,
     setSelectedType,
-    filteredTransactions
+    filteredTransactions,
+    summary
   } = useTransactions();
 
   return (
@@ -76,10 +77,34 @@ export function Dashboard() {
       </div>
 
       <div className={dashboardStyles.grid}>
-        <SummaryCard title="Saldo Disponível" amount="R$ 145.230,00" trend="+ 2.4%" trendUp={true} icon={<Wallet size={20} />} />
-        <SummaryCard title="Entradas (Mês)" amount="R$ 45.000,00" trend="+ 12.5%" trendUp={true} icon={<ArrowDownToLine size={20} />} />
-        <SummaryCard title="Saídas (Mês)" amount="R$ 12.350,00" trend="- 4.1%" trendUp={false} icon={<ArrowUpFromLine size={20} />} />
-        <SummaryCard title="Saldo Projetado" amount="R$ 177.880,00" trend="+ 5.2%" trendUp={true} icon={<LineChart size={20} />} />
+        <SummaryCard 
+          title="Saldo Disponível" 
+          amount={summary.balance} 
+          trend="+ 2.4%" 
+          trendUp={true} 
+          icon={<Wallet />} /* Sem size={20}! */
+        />
+        <SummaryCard 
+          title="Entradas (Mês)" 
+          amount={summary.incomes} 
+          trend="+ 12.5%" 
+          trendUp={true} 
+          icon={<ArrowDownToLine />} 
+        />
+        <SummaryCard 
+          title="Saídas (Mês)" 
+          amount={summary.expenses} 
+          trend="- 4.1%" 
+          trendUp={false} 
+          icon={<ArrowUpFromLine />} 
+        />
+        <SummaryCard 
+          title="Saldo Projetado" 
+          amount={summary.projected} 
+          trend="+ 5.2%" 
+          trendUp={true} 
+          icon={<LineChart />} 
+        />
       </div>
 
       <div>
