@@ -1,75 +1,52 @@
-# React + TypeScript + Vite
+# FinancePJ - Internet Banking Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Um painel financeiro corporativo (Internet Banking) robusto, performático e tipado, projetado especificamente para atender às demandas de gestão de fluxo de caixa de contas jurídicas (PJ).
 
-Currently, two official plugins are available:
+## 🚀 Tecnologias & Arquitetura
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+O projeto foi estruturado seguindo os padrões mais modernos do ecossistema front-end para garantir escalabilidade, tipagem estrita e manutenabilidade:
 
-## React Compiler
+- **React 18** (com TypeScript para contratos de dados e prevenção de bugs em tempo de compilação)
+- **Vite** (para um ambiente de desenvolvimento ultra-rápido com Hot Reload)
+- **Tailwind CSS v4** (utilizando a nova arquitetura baseada em plugins do Vite e injeção via `@theme` direto no CSS global)
+- **Lucide React** (iconografia vetorial e minimalista)
+- **API Intl Nativa** (gerenciamento e internacionalização de formatação de moedas `BRL`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 📐 Design System & UI Kit
 
-## Expanding the ESLint configuration
+A interface foi implementada com base nas especificações estritas de design para produtos corporativos financeiros, unindo sobriedade com tendências modernas de UI:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Tipografia:**
+  - `Hanken Grotesk` para destaques numéricos e títulos (valores monetários em destaque).
+  - `Inter` para leitura textual, menus e corpo da aplicação.
+  - `JetBrains Mono` com alinhamento à direita na tabela de transações, otimizando o escaneamento vertical de dados numéricos.
+- **Geometria (Shapes):**
+  - Componentes interativos (botões, inputs) com arredondamento de `4px` (`rounded`).
+  - Containers principais (cards de resumo) com arredondamento de `8px` (`rounded-lg`).
+  - Badges de status com raio de `1rem` (pílula) para diferenciação cognitiva imediata.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📁 Estrutura do Projeto
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+A arquitetura de pastas foi pensada para o crescimento sustentável da aplicação, separando responsabilidades de forma clara:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── components/   # UI Kit reutilizável (Button, Input, Table...)
+├── layouts/      # Estruturas de página (Sidebar, Header, MainLayout)
+├── pages/        # Telas da aplicação (Dashboard, Statement)
+├── services/     # Camada de dados e simulações (MockData)
+├── types/        # Contratos de tipagem globais do TypeScript
+└── utils/        # Funções utilitárias puras (Formatadores)
 
-```
+## 🛠️ Como Executar o Projeto
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. Instale as dependências:
+   ```bash
+   npm install
+2. Inicie o servidor de desenvolvimento local:
+   ```bash
+   npm run dev
+3. Abra o navegador no endereço indicado (geralmente http://localhost:5173).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Agora sim! Salve o arquivo, rode os comandos abaixo para atualizar o repositório:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
