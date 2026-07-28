@@ -1,19 +1,53 @@
+import { type ReactNode } from 'react';
 import { TransactionTable } from '../../components/Table';
-import { mockTransactions } from '../../services/mockData';
+import { Input } from '../../components/Input';
+import { useTransactions } from '../../hooks/useTransactions'; // Importamos o hook
+import { Wallet, ArrowDownToLine, ArrowUpFromLine, LineChart, Search } from 'lucide-react';
+
+const dashboardStyles = {
+  wrapper: "flex flex-col gap-8 w-full max-w-6xl mx-auto",
+  headerWrapper: "flex items-center justify-between",
+  title: "text-2xl font-bold text-slate-900 font-display",
+  subtitle: "text-slate-500 text-sm mt-1",
+  grid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4",
+
+  tableHeader: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4",
+  sectionTitle: "text-lg font-bold text-slate-900 font-display",
+  filterControls: "flex items-center gap-3 w-full sm:w-auto",
+  searchContainer: "relative w-full sm:w-64",
+  searchIcon: "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none",
+  searchInputPadding: "pl-10",
+  selectFilter: "px-3 py-2 rounded bg-slate-100 border border-transparent focus:bg-white focus:border-slate-500 text-sm font-sans text-slate-700 outline-none transition-all cursor-pointer"
+};
 
 const cardStyles = {
   container: "bg-white p-6 rounded-lg shadow-sm border border-slate-200 flex flex-col gap-2",
+  header: "flex items-center justify-between",
   title: "text-sm font-medium text-slate-500 font-sans",
+  iconWrapper: "p-2 bg-slate-50 rounded-md text-slate-400",
   value: "text-3xl font-bold text-slate-900 font-display tracking-tight",
   trendBase: "text-xs font-mono font-medium",
   trendUp: "text-emerald-600",
   trendDown: "text-red-500"
 };
 
-function SummaryCard({ title, amount, trend, trendUp }: { title: string, amount: string, trend: string, trendUp: boolean }) {
+interface CardProps {
+  title: string;
+  amount: string;
+  trend: string;
+  trendUp: boolean;
+  icon: ReactNode;
+}
+
+function SummaryCard({ title, amount, trend, trendUp, icon }: CardProps) {
   return (
     <div className={cardStyles.container}>
-      <h3 className={cardStyles.title}>{title}</h3>
+      <div className={cardStyles.header}>
+        <h3 className={cardStyles.title}>{title}</h3>
+        <div className={cardStyles.iconWrapper}>
+          {icon}
+        </div>
+      </div>
       <span className={cardStyles.value}>{amount}</span>
       <span className={`${cardStyles.trendBase} ${trendUp ? cardStyles.trendUp : cardStyles.trendDown}`}>
         {trendUp ? '↑' : '↓'} {trend} este mês
@@ -23,26 +57,61 @@ function SummaryCard({ title, amount, trend, trendUp }: { title: string, amount:
 }
 
 export function Dashboard() {
-  return (
-    <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto">
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedType,
+    setSelectedType,
+    filteredTransactions
+  } = useTransactions();
 
-      <div className="flex items-center justify-between">
+  return (
+    <div className={dashboardStyles.wrapper}>
+
+      <div className={dashboardStyles.headerWrapper}>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 font-display">Resumo Financeiro</h1>
-          <p className="text-slate-500 text-sm mt-1">Acompanhe o fluxo de caixa da TechCorp Soluções.</p>
+          <h1 className={dashboardStyles.title}>Resumo Financeiro</h1>
+          <p className={dashboardStyles.subtitle}>Acompanhe o fluxo de caixa da TechCorp Soluções.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard title="Saldo Disponível" amount="R$ 145.230,00" trend="+ 2.4%" trendUp={true} />
-        <SummaryCard title="Entradas (Mês)" amount="R$ 45.000,00" trend="+ 12.5%" trendUp={true} />
-        <SummaryCard title="Saídas (Mês)" amount="R$ 12.350,00" trend="- 4.1%" trendUp={false} />
-        <SummaryCard title="Saldo Projetado" amount="R$ 177.880,00" trend="+ 5.2%" trendUp={true} />
+      <div className={dashboardStyles.grid}>
+        <SummaryCard title="Saldo Disponível" amount="R$ 145.230,00" trend="+ 2.4%" trendUp={true} icon={<Wallet size={20} />} />
+        <SummaryCard title="Entradas (Mês)" amount="R$ 45.000,00" trend="+ 12.5%" trendUp={true} icon={<ArrowDownToLine size={20} />} />
+        <SummaryCard title="Saídas (Mês)" amount="R$ 12.350,00" trend="- 4.1%" trendUp={false} icon={<ArrowUpFromLine size={20} />} />
+        <SummaryCard title="Saldo Projetado" amount="R$ 177.880,00" trend="+ 5.2%" trendUp={true} icon={<LineChart size={20} />} />
       </div>
 
       <div>
-        <h2 className="text-lg font-bold text-slate-900 font-display mb-4">Últimas Transações</h2>
-        <TransactionTable transactions={mockTransactions} />
+        <div className={dashboardStyles.tableHeader}>
+          <h2 className={dashboardStyles.sectionTitle}>Últimas Transações</h2>
+          
+          <div className={dashboardStyles.filterControls}>
+            <div className={dashboardStyles.searchContainer}>
+              <Search size={16} className={dashboardStyles.searchIcon} />
+              <Input 
+                placeholder="Buscar por descrição ou valor..." 
+                className={dashboardStyles.searchInputPadding}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            <select 
+              className={dashboardStyles.selectFilter}
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="">Todos os tipos</option>
+              <option value="Pix">Pix</option>
+              <option value="TED">TED</option>
+              <option value="Boleto">Boleto</option>
+              <option value="Cartão">Cartão</option>
+            </select>
+          </div>
+        </div>
+
+        <TransactionTable transactions={filteredTransactions} />
       </div>
 
     </div>

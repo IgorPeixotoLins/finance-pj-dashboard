@@ -48,5 +48,4 @@ src/
    npm run dev
 3. Abra o navegador no endereço indicado (geralmente http://localhost:5173).
 
-Agora sim! Salve o arquivo, rode os comandos abaixo para atualizar o repositório:
 
