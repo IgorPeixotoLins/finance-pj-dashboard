@@ -10,8 +10,8 @@ const styles = {
   sidebarHeader: "h-16 flex items-center px-6 border-b border-slate-800",
   sidebarBrand: "text-xl font-bold text-emerald-400 font-display",
   navContainer: "flex-1 px-4 py-6 space-y-2",
-  navItemActive: "block px-4 py-2 bg-slate-800 text-white rounded-md font-medium font-sans",
-  navItem: "block px-4 py-2 hover:bg-slate-800 hover:text-white rounded-md transition-colors font-sans",
+  navItemActive: "w-full flex items-center gap-3 px-4 py-2 bg-slate-800 text-white rounded-md font-medium font-sans transition-colors",
+  navItem: "w-full flex items-center gap-3 px-4 py-2 hover:bg-slate-800 hover:text-white rounded-md transition-colors font-sans",
 
   header: "h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 w-full",
   headerTitle: "text-lg font-semibold text-slate-800 font-display",
@@ -28,52 +28,62 @@ const styles = {
 
 interface MainLayoutProps {
   children: ReactNode;
+  activePage: string;
+  onNavigate: (page: string) => void;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
+export function MainLayout({ children, activePage, onNavigate }: MainLayoutProps) {
   return (
     <div className={styles.wrapper}>
-
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <h1 className={styles.sidebarBrand}>FinancePJ</h1>
         </div>
 
         <nav className={styles.navContainer}>
-          <a href="#" className={styles.navItemActive}>
+          <button
+            onClick={() => onNavigate('dashboard')}
+            className={activePage === 'dashboard' ? styles.navItemActive : styles.navItem}
+          >
             <LayoutDashboard size={18} />
             Resumo
-          </a>
-          <a href="#" className={styles.navItem}>
+          </button>
+
+          <button
+            onClick={() => onNavigate('statement')}
+            className={activePage === 'statement' ? styles.navItemActive : styles.navItem}
+          >
             <FileText size={18} />
             Extrato
-          </a>
-          <a href="#" className={styles.navItem}>
+          </button>
+
+          <button
+            onClick={() => onNavigate('transfer')}
+            className={activePage === 'transfer' ? styles.navItemActive : styles.navItem}
+          >
             <Send size={18} />
             Pix / Transferências
-          </a>
+          </button>
         </nav>
       </aside>
-
       <div className={styles.mainArea}>
-        
         <header className={styles.header}>
-          <h2 className={styles.headerTitle}>Visão Geral</h2>
-          
+          <h2 className={styles.headerTitle}>
+            {activePage === 'dashboard' && 'Visão Geral'}
+            {activePage === 'statement' && 'Extrato Completo'}
+            {activePage === 'transfer' && 'Transferências'}
+          </h2>
+
           <div className={styles.profileSection}>
-            
             <button className={styles.notificationBtn}>
               <Bell size={20} />
               <span className={styles.notificationBadge}></span>
             </button>
-
             <div className={styles.divider}></div>
-
             <div className={styles.profileTextGroup}>
               <p className={styles.profileName}>TechCorp Soluções</p>
               <p className={styles.profileCnpj}>CNPJ: 00.000.000/0001-00</p>
             </div>
-
             <div className={styles.avatar}>
               <Building2 size={20} />
             </div>
@@ -83,7 +93,6 @@ export function MainLayout({ children }: MainLayoutProps) {
         <main className={styles.content}>
           {children}
         </main>
-
       </div>
     </div>
   );

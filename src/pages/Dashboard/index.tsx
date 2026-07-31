@@ -82,7 +82,7 @@ export function Dashboard() {
           amount={summary.balance} 
           trend="+ 2.4%" 
           trendUp={true} 
-          icon={<Wallet />} /* Sem size={20}! */
+          icon={<Wallet />}
         />
         <SummaryCard 
           title="Entradas (Mês)" 
