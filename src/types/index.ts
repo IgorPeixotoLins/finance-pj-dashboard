@@ -1,18 +1,11 @@
-export type TransactionType = 'Pix' | 'TED' | 'Boleto' | 'Cartão';
-export type TransactionStatus = 'Liquidado' | 'Agendado' | 'Cancelado';
+export type TransactionType = 'TED' | 'Pix' | 'Boleto' | 'Cartão' | 'Outros';
 
 export interface Transaction {
   id: string;
-  date: string;
   description: string;
-  type: TransactionType;
   amount: number;
-  status: TransactionStatus;
-}
-
-export interface AccountSummary {
-  availableBalance: number;
-  monthlyInflow: number;
-  monthlyOutflow: number;
-  projectedBalance: number;
+  date: string;
+  category?: string;
+  type?: TransactionType;
+  status?: 'Liquidado' | 'Agendado' | 'Cancelado';
 }

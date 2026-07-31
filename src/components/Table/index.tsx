@@ -7,9 +7,17 @@ const styles = {
   table: "w-full text-left border-collapse",
   
   header: "px-6 py-4 bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 font-sans",
+  headerRight: "px-6 py-4 bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 font-sans text-right",
+
   row: "border-b border-slate-100 hover:bg-slate-50 transition-colors",
+
   cellBase: "px-6 py-4 text-sm font-sans whitespace-nowrap",
   cellDescription: "px-6 py-4 text-sm font-sans whitespace-nowrap font-medium text-slate-900",
+
+  amountCell: (amount: number) => 
+    `px-6 py-4 text-sm text-right font-mono font-medium whitespace-nowrap ${
+      amount > 0 ? "text-emerald-600" : "text-slate-900"
+    }`,
   
   amountBase: "px-6 py-4 text-sm text-right font-mono font-medium whitespace-nowrap",
   amountPositive: "text-emerald-600",
@@ -38,14 +46,14 @@ export function TransactionTable({ transactions }: TableProps) {
               <th className={styles.header}>Descrição</th>
               <th className={styles.header}>Tipo</th>
               <th className={styles.header}>Status</th>
-              <th className={`${styles.header} text-right`}>Valor</th>
+              <th className={styles.headerRight}>Valor</th>
             </tr>
           </thead>
           <tbody>
             {transactions.map((tx) => (
               <tr key={tx.id} className={styles.row}>
                 
-                <td className={`${styles.cellBase} text-slate-700`}>
+                <td className={styles.cellBase}>
                   {new Date(tx.date).toLocaleDateString('pt-BR')}
                 </td>
                 
@@ -53,17 +61,17 @@ export function TransactionTable({ transactions }: TableProps) {
                   {tx.description}
                 </td>
                 
-                <td className={`${styles.cellBase} text-slate-700`}>
+                <td className={styles.cellBase}>
                   {tx.type}
                 </td>
                 
                 <td className={styles.cellBase}>
-                  <span className={`${styles.badgeBase} ${styles.status[tx.status]}`}>
-                    {tx.status}
+                  <span className={`${styles.badgeBase} ${styles.status[tx.status || 'Liquidado']}`}>
+                    {tx.status || 'Liquidado'}
                   </span>
                 </td>
                 
-                <td className={`${styles.amountBase} ${tx.amount > 0 ? styles.amountPositive : styles.amountNegative}`}>
+                <td className={styles.amountCell(tx.amount)}>
                   {formatCurrency(tx.amount)}
                 </td>
                 

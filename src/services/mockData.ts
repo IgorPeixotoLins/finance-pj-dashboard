@@ -1,51 +1,35 @@
-import { type Transaction, type AccountSummary } from '../types';
+import { type Transaction } from '../types';
 
-export const mockSummary: AccountSummary = {
-  availableBalance: 145230.00,
-  monthlyInflow: 45000.00,
-  monthlyOutflow: 12350.00,
-  projectedBalance: 177880.00,
-};
-
-export const mockTransactions: Transaction[] = [
-  { 
-    id: 'tx-001', 
-    date: '2023-10-25', 
-    description: 'Recebimento Cliente ABC', 
-    type: 'Pix', 
-    amount: 15000.50, 
-    status: 'Liquidado' 
+export let mockTransactions: Transaction[] = [
+  {
+    id: '1',
+    description: 'Recebimento Cliente - Projeto Alpha',
+    amount: 12500.00,
+    date: '2026-07-28',
+    category: 'Receita',
+    type: 'TED',
+    status: 'Liquidado',
   },
-  { 
-    id: 'tx-002', 
-    date: '2023-10-24', 
-    description: 'Pagamento Fornecedor XYZ', 
-    type: 'TED', 
-    amount: -3500.00, 
-    status: 'Liquidado' 
+  {
+    id: '2',
+    description: 'Pagamento Fornecedor AWS',
+    amount: -1420.50,
+    date: '2026-07-29',
+    category: 'Despesa',
+    type: 'Boleto',
+    status: 'Liquidado',
   },
-  { 
-    id: 'tx-003', 
-    date: '2023-10-23', 
-    description: 'Impostos Mensais (DAS)', 
-    type: 'Boleto', 
-    amount: -1250.75, 
-    status: 'Agendado' 
+  {
+    id: '3',
+    description: 'Assinatura Ferramentas de Design',
+    amount: -350.00,
+    date: '2026-07-30',
+    category: 'Despesa',
+    type: 'Cartão',
+    status: 'Liquidado',
   },
-  { 
-    id: 'tx-004', 
-    date: '2023-10-22', 
-    description: 'Recebimento Cliente DEF', 
-    type: 'Pix', 
-    amount: 8400.00, 
-    status: 'Liquidado' 
-  },
-  { 
-    id: 'tx-005', 
-    date: '2023-10-21', 
-    description: 'Compra Equipamentos', 
-    type: 'Cartão', 
-    amount: -4200.00, 
-    status: 'Liquidado' 
-  }
 ];
+
+export function addTransaction(newTx: Transaction) {
+  mockTransactions = [newTx, ...mockTransactions];
+}
