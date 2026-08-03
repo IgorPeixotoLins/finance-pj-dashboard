@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { mockTransactions, addTransaction } from '../services/mockData';
 import { useToast } from '../contexts/ToastContext';
 
+const getLocalDateStr = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
 export function useTransfer() {
     const { addToast } = useToast()
 
@@ -17,7 +22,7 @@ export function useTransfer() {
 
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(getLocalDateStr());
 
     const totalIncomes = mockTransactions.filter(tx => tx.amount > 0).reduce((acc, tx) => acc + tx.amount, 0);
     const totalExpenses = mockTransactions.filter(tx => tx.amount < 0).reduce((acc, tx) => acc + tx.amount, 0);
@@ -125,6 +130,10 @@ export function useTransfer() {
             ? `${description} (${transferType === 'pix' ? 'Pix' : 'TED'})`
             : `Transferência ${transferType.toUpperCase()} - ${transferType === 'pix' ? pixKey : finalBankLabel}`;
 
+        const todayStr = getLocalDateStr();
+        const isFutureTransaction = date > todayStr;
+        const transactionStatus = isFutureTransaction ? 'Agendado' : 'Liquidado';
+
         addTransaction({
             id: Math.random().toString(36).substring(2, 9),
             description: transactionDescription,
@@ -132,13 +141,21 @@ export function useTransfer() {
             date: date || new Date().toISOString().split('T')[0],
             category: 'Transferência',
             type: transferType === 'pix' ? 'Pix' : 'TED',
-            status: 'Liquidado'
+            status: transactionStatus
         });
 
-        addToast(
-            `Transferência de ${formattedAmount} realizada com sucesso! Destino: ${destinationDetails}`,
-            'success'
-        );
+        if (isFutureTransaction) {
+            const [year, month, day] = date.split('-');
+            addToast(
+                `Transferência de ${formattedAmount} agendada com sucesso para o dia ${day}/${month}/${year}! Destino: ${destinationDetails}`,
+                'success'
+            );
+        } else {
+            addToast(
+                `Transferência de ${formattedAmount} realizada com sucesso! Destino: ${destinationDetails}`,
+                'success'
+            );
+        }
 
         setPixKey('');
         setBank('');
