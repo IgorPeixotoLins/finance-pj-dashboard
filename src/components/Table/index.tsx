@@ -5,7 +5,7 @@ const styles = {
   container: "bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden",
   tableWrapper: "overflow-x-auto",
   table: "w-full text-left border-collapse",
-  
+
   header: "px-6 py-4 bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 font-sans",
   headerRight: "px-6 py-4 bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 font-sans text-right",
 
@@ -14,15 +14,14 @@ const styles = {
   cellBase: "px-6 py-4 text-sm font-sans whitespace-nowrap",
   cellDescription: "px-6 py-4 text-sm font-sans whitespace-nowrap font-medium text-slate-900",
 
-  amountCell: (amount: number) => 
-    `px-6 py-4 text-sm text-right font-mono font-medium whitespace-nowrap ${
-      amount > 0 ? "text-emerald-600" : "text-slate-900"
+  amountCell: (amount: number) =>
+    `px-6 py-4 text-sm text-right font-mono font-medium whitespace-nowrap ${amount > 0 ? "text-emerald-600" : "text-slate-900"
     }`,
-  
+
   amountBase: "px-6 py-4 text-sm text-right font-mono font-medium whitespace-nowrap",
   amountPositive: "text-emerald-600",
   amountNegative: "text-slate-900",
-  
+
   badgeBase: "px-2.5 py-1 rounded-full text-xs font-medium inline-block",
   status: {
     Liquidado: "bg-emerald-100 text-emerald-700",
@@ -52,29 +51,29 @@ export function TransactionTable({ transactions }: TableProps) {
           <tbody>
             {transactions.map((tx) => (
               <tr key={tx.id} className={styles.row}>
-                
+
                 <td className={styles.cellBase}>
-                  {new Date(tx.date).toLocaleDateString('pt-BR')}
+                  {tx.date.includes('-') ? tx.date.split('-').reverse().join('/') : tx.date}
                 </td>
-                
+
                 <td className={styles.cellDescription}>
                   {tx.description}
                 </td>
-                
+
                 <td className={styles.cellBase}>
                   {tx.type}
                 </td>
-                
+
                 <td className={styles.cellBase}>
                   <span className={`${styles.badgeBase} ${styles.status[tx.status || 'Liquidado']}`}>
                     {tx.status || 'Liquidado'}
                   </span>
                 </td>
-                
+
                 <td className={styles.amountCell(tx.amount)}>
                   {formatCurrency(tx.amount)}
                 </td>
-                
+
               </tr>
             ))}
           </tbody>

@@ -1,75 +1,28 @@
-import { useState, useEffect } from 'react';
-import { mockTransactions, addTransaction } from '../services/mockData';
+import { useState } from 'react';
+import { addTransaction } from '../services/mockData';
 import { useToast } from '../contexts/ToastContext';
-
-const getLocalDateStr = () => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-};
+import { calculateCurrentBalance } from './useTransactions';
+import { useBankLookup } from './useBankLookup';
+import { getLocalDateStr, incrementDate } from '../utils/dateUtils';
+import { maskCpfCnpj } from '../utils/masks';
 
 export function useTransfer() {
-    const { addToast } = useToast()
+    const { addToast } = useToast();
+    const { bank, setBank, detectedBankName, isSearchingBank } = useBankLookup();
 
     const [transferType, setTransferType] = useState<'pix' | 'ted'>('pix');
     const [pixKey, setPixKey] = useState('');
-
-    const [bank, setBank] = useState('');
-    const [detectedBankName, setDetectedBankName] = useState('');
-    const [isSearchingBank, setIsSearchingBank] = useState(false);
-
     const [agency, setAgency] = useState('');
     const [account, setAccount] = useState('');
-
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
     const [date, setDate] = useState(getLocalDateStr());
 
-    const totalIncomes = mockTransactions.filter(tx => tx.amount > 0).reduce((acc, tx) => acc + tx.amount, 0);
-    const totalExpenses = mockTransactions.filter(tx => tx.amount < 0).reduce((acc, tx) => acc + tx.amount, 0);
-    const currentBalance = totalIncomes + totalExpenses;
+    const [isRecurring, setIsRecurring] = useState(false);
+    const [recurrenceInterval, setRecurrenceInterval] = useState('mensal');
+    const [recurrenceCount, setRecurrenceCount] = useState('2');
 
-    useEffect(() => {
-        const cleanBankCode = bank.replace(/\D/g, '');
-
-        if (cleanBankCode.length === 3) {
-            setIsSearchingBank(true);
-            setDetectedBankName('Buscando...');
-
-            fetch(`https://brasilapi.com.br/api/banks/v1/${cleanBankCode}`)
-                .then(async (response) => {
-                    if (!response.ok) throw new Error('Banco não encontrado');
-                    return response.json();
-                })
-                .then((data) => {
-                    setDetectedBankName(data.fullName || data.name);
-                })
-                .catch(() => {
-                    setDetectedBankName('Banco inválido ou não encontrado');
-                })
-                .finally(() => {
-                    setIsSearchingBank(false);
-                });
-        } else {
-            setDetectedBankName('');
-        }
-    }, [bank]);
-
-    const maskCpfCnpj = (value: string) => {
-        const cleanValue = value.replace(/\D/g, '');
-        if (cleanValue.length <= 11) {
-            return cleanValue
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d)/, '$1.$2')
-                .replace(/(\d{3})(\d{1,2})/, '$1-$2')
-                .replace(/(-\d{2})\d+?$/, '$1');
-        }
-        return cleanValue
-            .replace(/(\d{2})(\d)/, '$1.$2')
-            .replace(/(\d{3})(\d)/, '$1.$2')
-            .replace(/(\d{3})(\d)/, '$1/$2')
-            .replace(/(\d{4})(\d{1,2})/, '$1-$2')
-            .replace(/(-\d{2})\d+?$/, '$1');
-    };
+    const currentBalance = calculateCurrentBalance();
 
     const handleKeyChange = (value: string) => {
         const cleanValue = value.replace(/\D/g, '');
@@ -92,16 +45,23 @@ export function useTransfer() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-
         const numericAmount = parseFloat(amount.replace(',', '.'));
+        const numCount = parseInt(recurrenceCount, 10);
 
         if (isNaN(numericAmount) || numericAmount <= 0) {
             addToast('Por favor, informe um valor de transferência válido.', 'error');
             return;
         }
 
-        if (numericAmount > currentBalance) {
-            addToast('Tentativa de transferência negada: Saldo insuficiente.', 'error');
+        if (isRecurring && (isNaN(numCount) || numCount < 2 || numCount > 60)) {
+            addToast('A recorrência deve ser entre 2 e 60 parcelas.', 'error');
+            return;
+        }
+
+        const firstTransactionDate = date || getLocalDateStr();
+        const todayStr = getLocalDateStr();
+        if (firstTransactionDate <= todayStr && numericAmount > currentBalance) {
+            addToast('Tentativa de transferência negada: Saldo imediato insuficiente.', 'error');
             return;
         }
 
@@ -117,7 +77,6 @@ export function useTransfer() {
 
         const cleanBankCode = bank.replace(/\D/g, '');
         const finalBankLabel = detectedBankName ? `${cleanBankCode} - ${detectedBankName}` : bank;
-
         const formattedAmount = numericAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
         let destinationDetails = '';
@@ -126,35 +85,38 @@ export function useTransfer() {
         } else {
             destinationDetails = `TED | Banco: ${finalBankLabel} | Ag: ${agency} | Conta: ${account} | CPF/CNPJ: ${pixKey}`;
         }
-        const transactionDescription = description.trim()
+
+        const baseDescription = description.trim()
             ? `${description} (${transferType === 'pix' ? 'Pix' : 'TED'})`
             : `Transferência ${transferType.toUpperCase()} - ${transferType === 'pix' ? pixKey : finalBankLabel}`;
+        
+        const totalTransactions = isRecurring ? numCount : 1;
+        const loopTodayStr = getLocalDateStr();
 
-        const todayStr = getLocalDateStr();
-        const isFutureTransaction = date > todayStr;
-        const transactionStatus = isFutureTransaction ? 'Agendado' : 'Liquidado';
+        for (let i = 0; i < totalTransactions; i++) {
+            const txDate = isRecurring ? incrementDate(firstTransactionDate, recurrenceInterval, i) : firstTransactionDate;
+            const isFutureTransaction = txDate > loopTodayStr;
+            const transactionStatus = isFutureTransaction ? 'Agendado' : 'Liquidado';
+            const iterDescription = isRecurring ? `${baseDescription} (${i + 1}/${totalTransactions})` : baseDescription;
 
-        addTransaction({
-            id: Math.random().toString(36).substring(2, 9),
-            description: transactionDescription,
-            amount: -numericAmount,
-            date: date || new Date().toISOString().split('T')[0],
-            category: 'Transferência',
-            type: transferType === 'pix' ? 'Pix' : 'TED',
-            status: transactionStatus
-        });
+            addTransaction({
+                id: Math.random().toString(36).substring(2, 9),
+                description: iterDescription,
+                amount: -numericAmount,
+                date: txDate,
+                category: 'Transferência',
+                type: transferType === 'pix' ? 'Pix' : 'TED',
+                status: transactionStatus
+            });
+        }
 
-        if (isFutureTransaction) {
-            const [year, month, day] = date.split('-');
-            addToast(
-                `Transferência de ${formattedAmount} agendada com sucesso para o dia ${day}/${month}/${year}! Destino: ${destinationDetails}`,
-                'success'
-            );
+        if (isRecurring) {
+            addToast(`Foram agendadas ${numCount} transferências recorrentes de ${formattedAmount}! Destino: ${destinationDetails}`, 'success');
+        } else if (firstTransactionDate > loopTodayStr) {
+            const [year, month, day] = firstTransactionDate.split('-');
+            addToast(`Transferência de ${formattedAmount} agendada com sucesso para o dia ${day}/${month}/${year}! Destino: ${destinationDetails}`, 'success');
         } else {
-            addToast(
-                `Transferência de ${formattedAmount} realizada com sucesso! Destino: ${destinationDetails}`,
-                'success'
-            );
+            addToast(`Transferência de ${formattedAmount} realizada com sucesso! Destino: ${destinationDetails}`, 'success');
         }
 
         setPixKey('');
@@ -163,28 +125,21 @@ export function useTransfer() {
         setAccount('');
         setAmount('');
         setDescription('');
+        setIsRecurring(false);
+        setRecurrenceCount('2');
     };
 
     return {
-        transferType,
-        setTransferType,
-        pixKey,
-        handleKeyChange,
-        bank,
-        setBank,
-        detectedBankName,
-        isSearchingBank,
-        agency,
-        setAgency,
-        account,
-        setAccount,
-        handleAccountBlur,
-        amount,
-        setAmount,
-        description,
-        setDescription,
-        date,
-        setDate,
+        transferType, setTransferType,
+        pixKey, handleKeyChange,
+        bank, setBank, detectedBankName, isSearchingBank,
+        agency, setAgency, account, setAccount, handleAccountBlur,
+        amount, setAmount,
+        description, setDescription,
+        date, setDate,
+        isRecurring, setIsRecurring,
+        recurrenceInterval, setRecurrenceInterval,
+        recurrenceCount, setRecurrenceCount,
         handleSubmit,
         balanceLabel: currentBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
     };

@@ -1,8 +1,7 @@
 import { type ReactNode } from 'react';
 import { TransactionTable } from '../../components/Table';
-import { Input } from '../../components/Input';
-import { useTransactions } from '../../hooks/useTransactions'; // Importamos o hook
-import { Wallet, ArrowDownToLine, ArrowUpFromLine, LineChart, Search } from 'lucide-react';
+import { useTransactions } from '../../hooks/useTransactions'; 
+import { Wallet, ArrowDownToLine, ArrowUpFromLine, LineChart } from 'lucide-react';
 
 const dashboardStyles = {
   wrapper: "flex flex-col gap-8 w-full max-w-6xl mx-auto",
@@ -12,12 +11,7 @@ const dashboardStyles = {
   grid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4",
 
   tableHeader: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4",
-  sectionTitle: "text-lg font-bold text-slate-900 font-display",
-  filterControls: "flex items-center gap-3 w-full sm:w-auto",
-  searchContainer: "relative w-full sm:w-64",
-  searchIcon: "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none",
-  searchInputPadding: "pl-10",
-  selectFilter: "px-3 py-2 rounded bg-slate-100 border border-transparent focus:bg-white focus:border-slate-500 text-sm font-sans text-slate-700 outline-none transition-all cursor-pointer"
+  sectionTitle: "text-lg font-bold text-slate-900 font-display"
 };
 
 const cardStyles = {
@@ -57,15 +51,10 @@ function SummaryCard({ title, amount, trend, trendUp, icon }: CardProps) {
 }
 
 export function Dashboard() {
-  const {
-    searchTerm,
-    setSearchTerm,
-    selectedType,
-    setSelectedType,
-    filteredTransactions,
-    summary
-  } = useTransactions();
+  const { dashboardTransactions, summary } = useTransactions();
 
+  const recentTransactions = dashboardTransactions.slice(0, 5);
+  
   return (
     <div className={dashboardStyles.wrapper}>
 
@@ -110,33 +99,9 @@ export function Dashboard() {
       <div>
         <div className={dashboardStyles.tableHeader}>
           <h2 className={dashboardStyles.sectionTitle}>Últimas Transações</h2>
-          
-          <div className={dashboardStyles.filterControls}>
-            <div className={dashboardStyles.searchContainer}>
-              <Search size={16} className={dashboardStyles.searchIcon} />
-              <Input 
-                placeholder="Buscar por descrição ou valor..." 
-                className={dashboardStyles.searchInputPadding}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            <select 
-              className={dashboardStyles.selectFilter}
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-            >
-              <option value="">Todos os tipos</option>
-              <option value="Pix">Pix</option>
-              <option value="TED">TED</option>
-              <option value="Boleto">Boleto</option>
-              <option value="Cartão">Cartão</option>
-            </select>
-          </div>
         </div>
 
-        <TransactionTable transactions={filteredTransactions} />
+        <TransactionTable transactions={recentTransactions} />
       </div>
 
     </div>

@@ -33,6 +33,11 @@ const transferStyles = {
         `flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-medium transition-all ${isActive ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
         }`,
 
+    recurringBox: "col-span-1 md:col-span-2 p-4 border border-slate-200 rounded-lg bg-slate-50/50 flex flex-col gap-4",
+    recurringCheckboxLabel: "flex items-center gap-3 cursor-pointer select-none",
+    recurringGrid: "grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300",
+    selectField: "w-full px-4 py-2 rounded bg-white border border-slate-300 focus:border-slate-500 text-sm font-sans text-slate-900 outline-none h-10 cursor-pointer",
+
     footer: "flex justify-end pt-4 border-t border-slate-100 mt-2",
     submitBtn: "gap-2 [&>svg]:w-4 [&>svg]:h-4"
 };
@@ -58,6 +63,12 @@ export function Transfer() {
         setDescription,
         date,
         setDate,
+        isRecurring,
+        setIsRecurring,
+        recurrenceInterval,
+        setRecurrenceInterval,
+        recurrenceCount,
+        setRecurrenceCount,
         handleSubmit,
         balanceLabel
     } = useTransfer();
@@ -165,6 +176,50 @@ export function Transfer() {
                         required
                         min={new Date().toISOString().split('T')[0]}
                     />
+
+<div className={transferStyles.recurringBox}>
+                        <label className={transferStyles.recurringCheckboxLabel}>
+                            <input 
+                                type="checkbox" 
+                                checked={isRecurring}
+                                onChange={(e) => setIsRecurring(e.target.checked)}
+                                className="w-4 h-4 text-slate-900 border-slate-300 rounded focus:ring-slate-900 cursor-pointer"
+                            />
+                            <span className="text-sm font-semibold text-slate-700 font-sans">
+                                Repetir esta transferência (Agendamento Recorrente)
+                            </span>
+                        </label>
+
+                        {isRecurring && (
+                            <div className={transferStyles.recurringGrid}>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-sm font-medium text-slate-700 font-sans">Frequência</label>
+                                    <select 
+                                        value={recurrenceInterval} 
+                                        onChange={(e) => setRecurrenceInterval(e.target.value)}
+                                        className={transferStyles.selectField}
+                                    >
+                                        <option value="diaria">Diária</option>
+                                        <option value="semanal">Semanal</option>
+                                        <option value="mensal">Mensal</option>
+                                        <option value="anual">Anual</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-sm font-medium text-slate-700 font-sans">Nº de Parcelas / Repetições</label>
+                                    <input 
+                                        type="number" 
+                                        min="2" 
+                                        max="60"
+                                        value={recurrenceCount}
+                                        onChange={(e) => setRecurrenceCount(e.target.value)}
+                                        className="w-full px-4 py-2 rounded bg-white border border-slate-300 focus:border-slate-500 text-sm font-sans text-slate-900 outline-none h-10"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     <div className={transferStyles.fullWidth}>
                         <Input
